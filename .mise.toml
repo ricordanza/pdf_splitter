@@ -1,0 +1,25 @@
+[settings]
+
+[env]
+
+[tools]
+
+# programming language
+rust = "1.92"
+helix = "25.07"
+
+[tasks.test]
+description = "cargo test"
+run = "cargo test"
+
+[tasks.run]
+description = "cargo run"
+run = "cargo run"
+
+[tasks.build]
+description = "cargo build"
+run = "cargo build"
+
+[tasks.release]
+description = "cargo build --release"
+run = "cargo build --release"
