@@ -1,0 +1,9 @@
+[package]
+name = "pdf_splitter"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+lopdf = "0.32"
+anyhow = "1.0"
+clap = { version = "4.0", features = ["derive"] }
