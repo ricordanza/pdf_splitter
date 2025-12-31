@@ -7,3 +7,4 @@ edition = "2024"
 lopdf = "0.32"
 anyhow = "1.0"
 clap = { version = "4.0", features = ["derive"] }
+rayon = "1.8"

@@ -399,6 +399,7 @@ dependencies = [
  "anyhow",
  "clap",
  "lopdf",
+ "rayon",
 ]
 
 [[package]]
