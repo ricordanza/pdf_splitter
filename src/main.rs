@@ -53,7 +53,7 @@ fn main() -> Result<()> {
     println!("Loading PDF: {:?}", input_path);
     let load_start = Instant::now();
     
-    // ★高速化: BufReaderを使って読み込みをバッファリングする
+    // 高速化: BufReaderを使用
     let file = File::open(&input_path).with_context(|| format!("Failed to open file: {:?}", input_path))?;
     let reader = BufReader::new(file);
     let doc = Document::load_from(reader)
@@ -74,12 +74,12 @@ fn main() -> Result<()> {
     
     if let Ok(catalog_ref) = doc.trailer.get(b"Root").and_then(|o| o.as_reference()) {
         if let Ok(catalog) = doc.get_object(catalog_ref).and_then(|o| o.as_dict()) {
+            // Names -> Dests
             if let Ok(names_obj) = catalog.get(b"Names") {
                 if let Ok(names_real) = resolve_object(&doc, names_obj) {
                     if let Ok(names_dict) = names_real.as_dict() {
                         if let Ok(dests_obj) = names_dict.get(b"Dests") {
-                             let dests_real_res = resolve_object(&doc, dests_obj);
-                             if let Ok(dests_real) = dests_real_res {
+                             if let Ok(dests_real) = resolve_object(&doc, dests_obj) {
                                  if dests_real.as_dict().is_ok() {
                                      if let Ok(id) = names_dict.get(b"Dests").and_then(|o| o.as_reference()) {
                                          collect_name_tree_recursive(&doc, id, &mut named_dests);
@@ -109,6 +109,7 @@ fn main() -> Result<()> {
                     }
                 }
             }
+            // Catalog -> Dests
             if let Ok(dests_obj) = catalog.get(b"Dests") {
                 if let Ok(dests_real) = resolve_object(&doc, dests_obj) {
                     if let Ok(dests_dict) = dests_real.as_dict() {
@@ -161,6 +162,10 @@ fn main() -> Result<()> {
     chapter_starts.dedup_by_key(|k| k.0);
 
     let total_chapters = chapter_starts.len();
+    
+    // 桁数（パディング幅）の計算
+    let pad_width = std::cmp::max(2, total_chapters.to_string().len());
+
     println!("Found {} chapters. Starting parallel processing...", total_chapters);
 
     let total_pages = page_numbers.len() as u32;
@@ -198,7 +203,14 @@ fn main() -> Result<()> {
             safe_title
         };
 
-        let out_filename = format!("{}_chapter_{}_{}.pdf", file_stem, i + 1, safe_title_short);
+        // ファイル名生成時にゼロ埋めパディングを適用
+        let out_filename = format!(
+            "{}_chapter_{:0width$}_{}.pdf", 
+            file_stem, 
+            i + 1, 
+            safe_title_short, 
+            width = pad_width
+        );
         let out_path = parent_dir.join(&out_filename);
 
         if let Err(e) = split_doc.save(&out_path) {
